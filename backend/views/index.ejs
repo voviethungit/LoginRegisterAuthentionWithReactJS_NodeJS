@@ -6,15 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <script>
-        var status = '<%= status %>';
+        var status = '<%= JSON.stringify(status) %>';
 
-        if (status === "verified") {
-            var shouldLogin = confirm("Bạn có muốn đăng nhập không?");
-            if (shouldLogin) {
-                // Chuyển hướng tới trang đăng nhập
-                window.location.href = "http://localhost:3000/";
+        if (JSON.parse(status) == "verified") {
+            if (confirm("Do u want to login?")) {
+                window.location.href = "http://localhost:3000/"
             }
         }
+
     </script>
 </head>
 
