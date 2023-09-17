@@ -11,7 +11,7 @@ app.use(cors());
 const mongoose = require("mongoose");
 
 const mongoUrl =
-  "mongodb+srv://voviethungdeveloper:TFxZINVZlKsD2gFk@cluster0.pv6rkef.mongodb.net/TestForm?retryWrites=true&w=majority";
+  "mongodb+srv://voviethungdeveloper:TFxZINVZlKsD2gFk@cluster0.pv6rkef.mongodb.net/ReactJS_NodeJS?retryWrites=true&w=majority";
 mongoose
   .connect(mongoUrl, {
     useNewUrlParser: true,
@@ -26,20 +26,20 @@ require("./userDetails");
 const User = mongoose.model("UserInfo");
 
 app.post("/register", async (req, res) => {
-  const { fname, lname, email, mobile, password } = req.body;
+  const { fname, lname, email, password, userType } = req.body;
 
   const encryptedPassword = await bcrypt.hash(password, 10);
   try {
     const oldUser = await User.findOne({ email });
     if (oldUser) {
-      return res.send({ error: "Số điện thoại hoặc email đã được sử dụng!" });
+      return res.send({ error: "email đã được sử dụng!" });
     }
     await User.create({
       fname,
       lname,
       email,
-      mobile,
       password: encryptedPassword,
+      userType,
     });
     res.send({ status: "ok" });
   } catch (error) {
@@ -57,7 +57,7 @@ app.post("/login-user", async (req, res) => {
   }
   if (await bcrypt.compare(password, user.password)) {
     const token = jwt.sign({ email: user.email }, JWT_SECRET, {
-      expiresIn: 500, //time het han token
+      expiresIn: "5m", //time het han token
     });
 
     if (res.status(201)) {
@@ -149,7 +149,6 @@ app.post("/reset-password/:id/:token", async (req, res) => {
     );
     res.json({ status: "Password Updated" });
     res.render("index", { email: verify.email, status: "verified" });
-
   } catch (error) {
     res.json({ status: "Something went wrong" });
   }
