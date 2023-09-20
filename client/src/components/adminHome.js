@@ -1,4 +1,4 @@
-import React, { Component, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import ReactPaginate from 'react-paginate';
@@ -98,16 +98,19 @@ export default function AdminHome({ userData }) {
       <div className="auth-inner" style={{ width: "auto" }}>
         <h3>Welcom Admin</h3>
         <table style={{ width: 500 }}>
+        <tbody>
           <tr>
             <th>Name</th>
+            <th>LName</th>
             <th>Email</th>
             <th>User Type</th>
             <th>Delete</th>
           </tr>
           {data.map((i) => {
             return (
-              <tr>
+              <tr >
                 <td>{i.fname}</td>
+                <td>{i.lname}</td>
                 <td>{i.email}</td>
                 <td>{i.userType}</td>
                 <td>
@@ -119,6 +122,7 @@ export default function AdminHome({ userData }) {
               </tr>
             );
           })}
+           </tbody>
         </table>
         <ReactPaginate
           breakLabel="..."

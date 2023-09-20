@@ -22,9 +22,10 @@ mongoose
   .catch((e) => console.log(e));
 
 require("./userDetails");
+require("./imageDetails");
 
 const User = mongoose.model("UserInfo");
-
+const Images = mongoose.model("ImageDetails");
 app.post("/register", async (req, res) => {
   const { fname, lname, email, password, userType } = req.body;
 
@@ -57,7 +58,7 @@ app.post("/login-user", async (req, res) => {
   }
   if (await bcrypt.compare(password, user.password)) {
     const token = jwt.sign({ email: user.email }, JWT_SECRET, {
-      expiresIn: "5m", //time het han token
+      expiresIn: "60m", //time het han token
     });
 
     if (res.status(201)) {
@@ -152,6 +153,103 @@ app.post("/reset-password/:id/:token", async (req, res) => {
   } catch (error) {
     res.json({ status: "Something went wrong" });
   }
+});
+
+app.get("/getAllUser", async (req, res) => {
+  try {
+    const allUser = await User.find({});
+    res.send({ status: "ok", data: allUser });
+  } catch (error) {}
+});
+
+app.post("/updateUser", async (req, res) => {
+  const { id, fname, lname } = req.body;
+  try {
+    await User.updateOne(
+      { _id: id },
+      {
+        $set: {
+          fname: fname,
+          lname: lname,
+        },
+      }
+    );
+    return res.json({ status: "ok", data: "updated" });
+  } catch (error) {
+    return res.json({ status: error, data: error });
+  }
+});
+
+app.post("/deleteUser", async (req, res) => {
+  const { userid } = req.body;
+
+  // phiên bản mới của Mongoose đã thay đổi cách sử dụng hàm deleteOne và không còn chấp nhận một hàm callback như trước. Thay vào đósử dụng hàm trả về Promise của deleteOne 
+  try {
+    const result = await User.deleteOne({ _id: userid });
+    if (result.deletedCount === 1) {
+      console.log("User deleted successfully");
+      res.send({ status: "Ok", data: "Deleted" });
+    } else {
+      console.log("User not found");
+      res.status(404).send({ status: "Error", data: "User not found" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ status: "Error", data: "Failed to delete user" });
+  }
+});
+
+
+app.post("/upload-image", async (req, res) => {
+  const { base64 } = req.body;
+  try {
+    await Images.create({ image: base64 });
+
+    res.send({ status: "ok" });
+  } catch (error) {
+    res.send({ status: "error", data: error });
+  }
+});
+
+app.get("/get-image", async (req, res) => {
+  try {
+    await Images.find({}).then((data) => {
+      res.send({ status: "ok", data: data });
+    });
+  } catch (error) {
+    res.send({ status: "error", data: error });
+  }
+});
+
+app.get("/paginatedUsers", async (req, res) => {
+  const allUser = await User.find({});
+  const page = parseInt(req.query.page);
+  const limit = parseInt(req.query.limit);
+
+  const startIndex = (page - 1) * 1;
+  const lastIndex = page * limit;
+  const results = {};
+
+  results.totalUser = allUser.length;
+  results.pageCount = Math.ceil(allUser.length / limit);
+
+
+
+  if (lastIndex < allUser.length) {
+    results.next = {
+      page: page + 1,
+      limit: limit,
+    };
+  }
+
+  if (startIndex > 0) {
+    results.prev = {
+      page: page - 1,
+    };
+  }
+
+  results.result = allUser.slice(startIndex, lastIndex);
+  res.json(results);
 });
 app.listen(5000, () => {
   console.log("Server dang chay tai PORT : http://localhost:5000/");
